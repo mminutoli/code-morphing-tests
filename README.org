@@ -1,0 +1,11 @@
+
+* Overview
+
+This project offer a simple way to test what is done by the
+[[https://github.com/mminutoli/code-morphing.git][CodeMorphingPass]] using some test case. At the moment the only one
+implemented is aes from PolarSSL.
+
+To run the test simply:
+#+BEGIN_EXAMPLE
+make PLUGIN=<complete path to the CMPass.so plugin>
+#+END_EXAMPLE
