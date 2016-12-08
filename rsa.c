@@ -1621,6 +1621,14 @@ int mbedtls_rsa_self_test( int verbose )
     unsigned char sha1sum[20];
 #endif
 
+#define TIMER_START() struct timespec start_time;\
+      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start_time)
+
+#define TIMER_END() struct timespec end_time; \
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end_time);\
+            unsigned long diffInNanos = end_time.tv_nsec - start_time.tv_nsec;\
+            mbedtls_printf( "  \t%lu\n", diffInNanos)
+
     mbedtls_rsa_init( &rsa, MBEDTLS_RSA_PKCS_V15, 0 );
 
     rsa.len = KEY_LEN;
@@ -1650,26 +1658,39 @@ int mbedtls_rsa_self_test( int verbose )
 
     memcpy( rsa_plaintext, RSA_PT, PT_LEN );
 
+    int j = 0;
+    {
+    TIMER_START();
+    for (j = 0; j < 1000; ++j) {
     if( mbedtls_rsa_pkcs1_encrypt( &rsa, myrand, NULL, MBEDTLS_RSA_PUBLIC, PT_LEN,
                            rsa_plaintext, rsa_ciphertext ) != 0 )
     {
-        if( verbose != 0 )
-            mbedtls_printf( "failed\n" );
+        /* if( verbose != 0 ) */
+        /*     mbedtls_printf( "failed\n" ); */
 
-        return( 1 );
+        /* return( 1 ); */
+    }
+    }
+    TIMER_END();
     }
 
     if( verbose != 0 )
-        mbedtls_printf( "passed\n  PKCS#1 decryption : " );
+        mbedtls_printf( "  PKCS#1 decryption : " );
 
+    {
+    TIMER_START();
+    for (j = 0; j < 1000; ++j) {
     if( mbedtls_rsa_pkcs1_decrypt( &rsa, myrand, NULL, MBEDTLS_RSA_PRIVATE, &len,
                            rsa_ciphertext, rsa_decrypted,
                            sizeof(rsa_decrypted) ) != 0 )
     {
-        if( verbose != 0 )
-            mbedtls_printf( "failed\n" );
+        /* if( verbose != 0 ) */
+        /*     mbedtls_printf( "failed\n" ); */
 
-        return( 1 );
+        /* return( 1 ); */
+    }
+    }
+    TIMER_END();
     }
 
     if( memcmp( rsa_decrypted, rsa_plaintext, len ) != 0 )
@@ -1680,14 +1701,18 @@ int mbedtls_rsa_self_test( int verbose )
         return( 1 );
     }
 
-    if( verbose != 0 )
-        mbedtls_printf( "passed\n" );
+    /* if( verbose != 0 ) */
+    /*     mbedtls_printf( "passed\n" ); */
 
 #if defined(MBEDTLS_SHA1_C)
     if( verbose != 0 )
         mbedtls_printf( "  PKCS#1 data sign  : " );
 
     mbedtls_sha1( rsa_plaintext, PT_LEN, sha1sum );
+
+    {
+    TIMER_START();
+    for (j = 0; j < 1000; ++j) {
 
     if( mbedtls_rsa_pkcs1_sign( &rsa, myrand, NULL, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA1, 0,
                         sha1sum, rsa_ciphertext ) != 0 )
@@ -1697,10 +1722,16 @@ int mbedtls_rsa_self_test( int verbose )
 
         return( 1 );
     }
+    }
+    TIMER_END();
+    }
 
     if( verbose != 0 )
-        mbedtls_printf( "passed\n  PKCS#1 sig. verify: " );
+        mbedtls_printf( "  PKCS#1 sig. verify: " );
 
+    {
+    TIMER_START();
+    for (j = 0; j < 1000; ++j) {
     if( mbedtls_rsa_pkcs1_verify( &rsa, NULL, NULL, MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_SHA1, 0,
                           sha1sum, rsa_ciphertext ) != 0 )
     {
@@ -1709,9 +1740,12 @@ int mbedtls_rsa_self_test( int verbose )
 
         return( 1 );
     }
+    }
+    TIMER_END();
+    }
 
-    if( verbose != 0 )
-        mbedtls_printf( "passed\n" );
+    /* if( verbose != 0 ) */
+    /*     mbedtls_printf( "passed\n" ); */
 #endif /* MBEDTLS_SHA1_C */
 
     if( verbose != 0 )

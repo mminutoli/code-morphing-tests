@@ -46,6 +46,7 @@
 #if defined(MBEDTLS_SELF_TEST)
 #if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
+#include <time.h>
 #else
 #include <stdio.h>
 #define mbedtls_printf printf
@@ -1255,41 +1256,55 @@ int mbedtls_aes_self_test( int verbose )
 
         memset( buf, 0, 16 );
 
+#define TIMER_START() struct timespec start_time;\
+      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start_time)
+
+#define TIMER_END() struct timespec end_time; \
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end_time);\
+            unsigned long long diffInNanos = end_time.tv_nsec - start_time.tv_nsec;\
+            mbedtls_printf( "  \t%llu\n", diffInNanos)
+
+
         if( v == MBEDTLS_AES_DECRYPT )
         {
             mbedtls_aes_setkey_dec( &ctx, key, 128 + u * 64 );
 
-            for( j = 0; j < 10000; j++ )
+            TIMER_START();
+            for( j = 0; j < 1000; j++ ) {
                 mbedtls_aes_crypt_ecb( &ctx, v, buf, buf );
+            }
+            TIMER_END();
 
             if( memcmp( buf, aes_test_ecb_dec[u], 16 ) != 0 )
             {
-                if( verbose != 0 )
-                    mbedtls_printf( "failed\n" );
+                /* if( verbose != 0 ) */
+                /*     mbedtls_printf( "failed\n" ); */
 
                 ret = 1;
-                goto exit;
+                //                goto exit;
             }
         }
         else
         {
             mbedtls_aes_setkey_enc( &ctx, key, 128 + u * 64 );
 
-            for( j = 0; j < 10000; j++ )
+            TIMER_START();
+            for( j = 0; j < 1000; j++ )
                 mbedtls_aes_crypt_ecb( &ctx, v, buf, buf );
+            TIMER_END();
 
             if( memcmp( buf, aes_test_ecb_enc[u], 16 ) != 0 )
             {
-                if( verbose != 0 )
-                    mbedtls_printf( "failed\n" );
+                /* if( verbose != 0 ) */
+                /*     mbedtls_printf( "failed\n" ); */
 
                 ret = 1;
-                goto exit;
+                //                goto exit;
             }
         }
 
-        if( verbose != 0 )
-            mbedtls_printf( "passed\n" );
+        /* if( verbose != 0 ) */
+        /*     mbedtls_printf( "passed\n" ); */
     }
 
     if( verbose != 0 )
@@ -1316,23 +1331,26 @@ int mbedtls_aes_self_test( int verbose )
         {
             mbedtls_aes_setkey_dec( &ctx, key, 128 + u * 64 );
 
-            for( j = 0; j < 10000; j++ )
+            TIMER_START();
+            for( j = 0; j < 1000; j++ )
                 mbedtls_aes_crypt_cbc( &ctx, v, 16, iv, buf, buf );
+            TIMER_END();
 
             if( memcmp( buf, aes_test_cbc_dec[u], 16 ) != 0 )
             {
-                if( verbose != 0 )
-                    mbedtls_printf( "failed\n" );
+                /* if( verbose != 0 ) */
+                /*     mbedtls_printf( "failed\n" ); */
 
                 ret = 1;
-                goto exit;
+                //                goto exit;
             }
         }
         else
         {
             mbedtls_aes_setkey_enc( &ctx, key, 128 + u * 64 );
 
-            for( j = 0; j < 10000; j++ )
+            TIMER_START();
+            for( j = 0; j < 1000; j++ )
             {
                 unsigned char tmp[16];
 
@@ -1342,19 +1360,20 @@ int mbedtls_aes_self_test( int verbose )
                 memcpy( prv, buf, 16 );
                 memcpy( buf, tmp, 16 );
             }
+            TIMER_END();
 
             if( memcmp( prv, aes_test_cbc_enc[u], 16 ) != 0 )
             {
-                if( verbose != 0 )
-                    mbedtls_printf( "failed\n" );
+                /* if( verbose != 0 ) */
+                /*     mbedtls_printf( "failed\n" ); */
 
                 ret = 1;
-                goto exit;
+                //                goto exit;
             }
         }
 
-        if( verbose != 0 )
-            mbedtls_printf( "passed\n" );
+        /* if( verbose != 0 ) */
+        /*     mbedtls_printf( "passed\n" ); */
     }
 
     if( verbose != 0 )
@@ -1383,34 +1402,44 @@ int mbedtls_aes_self_test( int verbose )
         if( v == MBEDTLS_AES_DECRYPT )
         {
             memcpy( buf, aes_test_cfb128_ct[u], 64 );
-            mbedtls_aes_crypt_cfb128( &ctx, v, 64, &offset, iv, buf, buf );
+            TIMER_START();
+            for( j = 0; j < 1000; j++ )
+            {
+                mbedtls_aes_crypt_cfb128( &ctx, v, 64, &offset, iv, buf, buf );
+            }
+            TIMER_END();
 
             if( memcmp( buf, aes_test_cfb128_pt, 64 ) != 0 )
             {
-                if( verbose != 0 )
-                    mbedtls_printf( "failed\n" );
+                /* if( verbose != 0 ) */
+                /*     mbedtls_printf( "failed\n" ); */
 
                 ret = 1;
-                goto exit;
+                // goto exit;
             }
         }
         else
         {
             memcpy( buf, aes_test_cfb128_pt, 64 );
-            mbedtls_aes_crypt_cfb128( &ctx, v, 64, &offset, iv, buf, buf );
+            TIMER_START();
+            for( j = 0; j < 1000; j++ )
+            {
+                mbedtls_aes_crypt_cfb128( &ctx, v, 64, &offset, iv, buf, buf );
+            }
+            TIMER_END();
 
             if( memcmp( buf, aes_test_cfb128_ct[u], 64 ) != 0 )
             {
-                if( verbose != 0 )
-                    mbedtls_printf( "failed\n" );
+                /* if( verbose != 0 ) */
+                /*     mbedtls_printf( "failed\n" ); */
 
                 ret = 1;
-                goto exit;
+                // goto exit;
             }
         }
 
-        if( verbose != 0 )
-            mbedtls_printf( "passed\n" );
+        /* if( verbose != 0 ) */
+        /*     mbedtls_printf( "passed\n" ); */
     }
 
     if( verbose != 0 )
@@ -1441,16 +1470,21 @@ int mbedtls_aes_self_test( int verbose )
             len = aes_test_ctr_len[u];
             memcpy( buf, aes_test_ctr_ct[u], len );
 
-            mbedtls_aes_crypt_ctr( &ctx, len, &offset, nonce_counter, stream_block,
-                           buf, buf );
+            TIMER_START();
+            for( j = 0; j < 1000; j++ )
+            {
+                 mbedtls_aes_crypt_ctr( &ctx, len, &offset, nonce_counter, stream_block,
+                                        buf, buf );
+            }
+            TIMER_END();
 
             if( memcmp( buf, aes_test_ctr_pt[u], len ) != 0 )
             {
-                if( verbose != 0 )
-                    mbedtls_printf( "failed\n" );
+                /* if( verbose != 0 ) */
+                /*     mbedtls_printf( "failed\n" ); */
 
                 ret = 1;
-                goto exit;
+                // goto exit;
             }
         }
         else
@@ -1458,21 +1492,26 @@ int mbedtls_aes_self_test( int verbose )
             len = aes_test_ctr_len[u];
             memcpy( buf, aes_test_ctr_pt[u], len );
 
-            mbedtls_aes_crypt_ctr( &ctx, len, &offset, nonce_counter, stream_block,
-                           buf, buf );
+            TIMER_START();
+            for( j = 0; j < 1000; j++ )
+            {
+                 mbedtls_aes_crypt_ctr( &ctx, len, &offset, nonce_counter, stream_block,
+                                        buf, buf );
+            }
+            TIMER_END();
 
             if( memcmp( buf, aes_test_ctr_ct[u], len ) != 0 )
             {
-                if( verbose != 0 )
-                    mbedtls_printf( "failed\n" );
+                /* if( verbose != 0 ) */
+                /*     mbedtls_printf( "failed\n" ); */
 
                 ret = 1;
-                goto exit;
+                // goto exit;
             }
         }
 
-        if( verbose != 0 )
-            mbedtls_printf( "passed\n" );
+        /* if( verbose != 0 ) */
+        /*     mbedtls_printf( "passed\n" ); */
     }
 
     if( verbose != 0 )
