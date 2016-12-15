@@ -16,8 +16,17 @@ test: aes-morphed.ll aesni-morphed.ll \
       randomize.c main.c
 	${CC} -I . -o $@ $^
 
-check: test
+
+test-original: aes.ll aesni.ll \
+      des.ll \
+      sha1.c sha256.c sha512.c \
+      rsa.ll md.ll md_wrap.ll md5.ll ripemd160.ll bignum.c oid.ll asn1parse.ll asn1write.ll pk.ll pk_wrap.ll ecdsa.ll hmac_drbg.ll ecp.c ecp_curves.c\
+      randomize.c main.c
+	${CC} -I . -o $@ $^
+
+check: test test-original
 	./test
+	./test-original
 
 .PHONY: clean
 
